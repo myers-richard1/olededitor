@@ -16,6 +16,7 @@ canvas.addEventListener('mousemove', fill)
 
 
 function clickDown(e){
+  if (e.target != canvas) return
     if (e.which === 1)
         clicking = true
     if (e.which === 3)
@@ -61,7 +62,11 @@ function fill(e) {
 }
 
 function exportCode(){
+  alert("comin soon")
+}
 
+function exportUrl(){
+  alert("comin soon")
 }
 
 drawBox();
