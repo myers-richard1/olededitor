@@ -1,1 +1,1 @@
-ay nothin here lol
+should probably redirect to the app lol
