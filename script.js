@@ -1,26 +1,20 @@
-var num = "1101"
-var encoded = parseInt(num, 2)
-var hex = encoded.toString(16)
-
-//get the saved data from the url, if any
+//initialize the basics
+applicationPath = window.location.protocol + window.location.pathname //used for redirecting after saves
 const queryString = window.location.search
-console.log(queryString)
 const urlParams = new URLSearchParams(queryString)
-fileName = ""
+//get the saved data from the url, if any
 if (urlParams.has("name"))
-  fileName = urlParams.get("name")
+  document.getElementById("name").value = urlParams.get('name')
 sizeX = 16
 if (urlParams.has("sizeX"))
   sizeX = urlParams.get("sizeX")
 sizeY = 16
 if (urlParams.has("sizeY"))
-  sizeY = urlParams.get(sizeY)
-
-applicationPath = window.location.protocol + window.location.pathname
-
+  sizeY = urlParams.get("sizeY")
+ 
+//initialize our editor/canvas state
 var clicking = false
 var erasing = false
-
 var canvasSize = 600
 var boxes = 16
 var boxData = []
@@ -29,19 +23,16 @@ for (var i = 0; i < (boxes * boxes); i++){
 }
 
 if (urlParams.has("data")){
-  alert("data found")
   dataString = urlParams.get("data")
   for (var i = 0; i < dataString.length; i++){
     base32Char = dataString.charAt(i)
     numericalValue = parseInt(base32Char,32)
     binaryString = numericalValue.toString(2)
-    console.log("binaryString is " + binaryString)
+    binaryString = "00000".substring(binaryString.length) + binaryString
     for (var j = 0; j < binaryString.length; j++){
-      console.log("Setting " + (i*5+j) + " to "+ parseInt(binaryString.charAt(j)))
       boxData[i*5+j] = parseInt(binaryString.charAt(j))
     }
   }
-  alert(boxData)
 }
 
 var canvas = document.getElementById("canvas"),
@@ -49,7 +40,7 @@ var canvas = document.getElementById("canvas"),
     boxSize = 600/boxes
 document.addEventListener('mousedown', clickDown)
 document.addEventListener('mouseup', clickUp)
-canvas.addEventListener('mousemove', fill)
+canvas.addEventListener('mousemove', mouseMove)
 
 function clickDown(e){
   if (e.target != canvas) return
@@ -57,7 +48,9 @@ function clickDown(e){
         clicking = true
     if (e.which === 3)
         erasing = true
-    fill(e);
+    cellX = Math.floor(e.offsetX / boxSize)
+    cellY = Math.floor(e.offsetY / boxSize)
+    fill(cellX, cellY);
     return false
 }
 
@@ -66,36 +59,59 @@ function clickUp(e){
     erasing = false
 }
 
+function mouseMove(e){
+  cellX = Math.floor(e.offsetX / boxSize)
+    cellY = Math.floor(e.offsetY / boxSize)
+    fill(cellX, cellY);
+}
+
+/*
+Based on
+https://stackoverflow.com/questions/13990128/how-to-fill-a-cell-on-clicking-the-grid-on-canvas-in-html5
+*/
 function drawBox() {
   c.beginPath();
   
+  c.fillStyle = 'white'
   c.lineWidth = 3;
-  c.strokeStyle = 'black';
+  c.strokeStyle = 'black'
   for (var row = 0; row < boxes; row++) {
     for (var column = 0; column < boxes; column++) {
-      var x = column * boxSize;
-      var y = row * boxSize; 
-      c.fillStyle = (boxData[(row * boxes) + column] == 0) ? "white" : "black";
-      c.rect(x, y, boxSize, boxSize);
-      c.fill();
-      c.stroke();
+      var x = column * boxSize
+      var y = row * boxSize
+      c.rect(x,y,boxSize, boxSize)
+      c.fill()
+      c.stroke()
     }
   }
-  c.closePath();
+  c.closePath()
+  initGrid()
+  document.getElementById("loadingLabel").style.display = 'none'
+  document.getElementById("topBreak").style.display = 'none'
 }
 
-function fill(e) {
+function initGrid(){
+  for (var row = 0; row < boxes; row++){
+    for (var column = 0; column < boxes; column++){
+      data = boxData[(row * boxes + column)]
+      c.fillStyle = (data === 0) ? "white" : "black"
+      c.fillRect(column * boxSize,row * boxSize,boxSize, boxSize);
+      c.stroke()
+    }
+  }
+}
+
+function fill(cellX, cellY) {
   if (!(clicking || erasing)) return
-    c.strokeStyle = "black"
+    
+  c.strokeStyle = "black"
   if (clicking)
     c.fillStyle = "black";
   else if (erasing)
   c.fillStyle = "white"
-  x = Math.floor(e.offsetX / boxSize)
-  y = Math.floor(e.offsetY / boxSize)
 
-  boxData[x + (y*boxes)] = clicking ? 1 : 0
-  c.fillRect(x * boxSize,y * boxSize,boxSize, boxSize);
+  boxData[cellX + (cellY*boxes)] = clicking ? 1 : 0
+  c.fillRect(cellX * boxSize,cellY * boxSize,boxSize, boxSize);
   c.stroke()
 }
 
@@ -105,24 +121,25 @@ function exportCode(){
 
 function exportUrl(){
   binaryString = ""
-  alert(boxData)
   for (var row = 0; row < boxes; row++){
     for (var column = 0; column < boxes; column++){
       binaryString += boxData[(row * boxes) + column].toString()
     }
   }
-  alert(binaryString)
   finalBase32String = ""
-  //loop through the string, backwards
-  for (var i = binaryString.length; i >=0; i--){
+  //loop through the string
+  for (var i = 0; i < binaryString.length;){
     //loop through 5 characters
     bitStringForConversion = ""
     for (var j = 0; j<5; j++){
       //if we still have bits to grab
-      if (i >= 0){
-        //prepend to our current bitstring
-        bitStringForConversion = binaryString.charAt(i--) + bitStringForConversion
+      if (i < binaryString.length){
+        //append to our current bitstring
+        bitStringForConversion += binaryString.charAt(i++)
       }
+    else{
+      bitStringForConversion += "0"
+    }
     }
     console.log("Converting " + bitStringForConversion + " to a number")
     //convert these 5 bits into a number
@@ -131,11 +148,14 @@ function exportUrl(){
     //convert that number into a hexatridecimal string
     base32Representation = base10Representation.toString(32)
     console.log("Converted to base 32, it's " + base32Representation)
-    //prepend the data to our htdRepresentation
-    finalBase32String = base32Representation + finalBase32String
+    //append the data to our htdRepresentation
+    finalBase32String += base32Representation
   }
   parameterTemplate = "?name=nameValue&sizeX=sizeXValue&sizeY=sizeYValue&data=dataValue"
   parameterString = parameterTemplate.replace("dataValue", finalBase32String)
+  parameterString = parameterString.replace("nameValue", document.getElementById("name").value)
+  parameterString = parameterString.replace("sizeXValue", sizeX)
+  parameterString = parameterString.replace("sizeYValue", sizeY)
   window.location = applicationPath + parameterString
 }
 
