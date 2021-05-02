@@ -148,17 +148,17 @@ function exportCode(){
     return;
   }
   var hexOutput = []
-  //loop through the columns
-  for (var column = 0; column < sizeX; column++){
-    //divide the rows up in to groups of 8
-    for (var rowOffset = 0; rowOffset < sizeY/8; rowOffset++){
+  //divide the rows up into groups of 8
+  for (var rowOffset = 0; rowOffset < sizeY / 8; rowOffset++){
+    //loop through the columns
+    for (var column = 0; column < sizeX; column++){
       //loop through the 8 rows, building a bit string
       bitString = ""
       for(var row = 0; row < 8; row++){
         var cellX = column
         var cellY = (8 * rowOffset) + row
-        //prepend value to the bit string, since pixels are drawn bottom to top on the lcd
-        bitString += boxData[(cellY * sizeX) + cellX].toString()
+        //prepend value to the bit string, since pixels are drawn bottom to top on the oled
+        bitString = boxData[(cellY * sizeX) + cellX].toString() + bitString
       }
       //convert the bit string to a number
       var numericalValue = parseInt(bitString, 2)
