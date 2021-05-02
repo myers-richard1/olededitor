@@ -131,6 +131,7 @@ function fill(cellX, cellY) {
   //update the visual representation of the grid
   c.fillRect(cellX * boxSize,cellY * boxSize,boxSize, boxSize);
   c.stroke()
+  document.getElementById("status").innerHTML = "Not saved!"
 }
 
 //this function transforms the data to match the column encodingn of the lcd, 
@@ -220,9 +221,13 @@ function exportUrl(){
   parameterString = parameterString.replace("nameValue", document.getElementById("name").value)
   parameterString = parameterString.replace("sizeXValue", sizeX)
   parameterString = parameterString.replace("sizeYValue", sizeY)
-  document.getElementById.value = "Saving..."
+  document.getElementById("status").innerHTML = "Saving..."
   //redirect the user
-  window.location = applicationPath + parameterString
+  setTimeout(function () {redirect(applicationPath + parameterString)}, 1)
+}
+
+function redirect(url){
+  window.location = url
 }
 
 //from https://ourcodeworld.com/articles/read/189/how-to-create-a-file-and-generate-a-download-with-javascript-in-the-browser-without-a-server
