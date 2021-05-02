@@ -167,7 +167,7 @@ function exportCode(){
     }
   } 
   //create the array
-  var headerText = "static const char PROGMEM " + filename + "[" + (sizeX * sizeY / 8).toString() + "]{"
+  var headerText = "static const char PROGMEM " + filename + "[" + (sizeX * sizeY / 8).toString() + "]={"
   //populate the array
   for (var i = 0; i < hexOutput.length; i++){
     headerText += hexOutput[i] + ","
