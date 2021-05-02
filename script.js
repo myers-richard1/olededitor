@@ -38,6 +38,7 @@ if (urlParams.has("data")){
       boxData[i*5+j] = parseInt(binaryString.charAt(j))
     }
   }
+  document.getElementById("status").innerHTML = "Saved!"
 }
 
 //get reference to the canvas, the canvas context, and set up the box size
