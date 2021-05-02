@@ -107,10 +107,14 @@ function drawBox() {
   document.getElementById("topBreak").style.display = 'none'
 }
 
+//this function allows the provided image data to overwrite the grid
 function initGrid(){
+  //loop through all the rows and columns
   for (var row = 0; row < boxes; row++){
     for (var column = 0; column < boxes; column++){
+      //get the data for this cell
       data = boxData[(row * boxes + column)]
+      //set the appropriate fill style, then fill and stroke
       c.fillStyle = (data === 0) ? "white" : "black"
       c.fillRect(column * boxSize,row * boxSize,boxSize, boxSize);
       c.stroke()
